@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(psql -U postgres -c \"SELECT current_user;\" 2>&1)"
+    ]
+  }
+}

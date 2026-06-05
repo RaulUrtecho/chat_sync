@@ -1,0 +1,32 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Flutter (Emulator)",
+            "request": "launch",
+            "type": "dart",
+            "args": [
+                "--dart-define=SERVER_HOST=10.0.2.2",
+                "--dart-define=ENV=development"
+            ]
+        },
+        {
+            "name": "Flutter (Physical Device)",
+            "request": "launch",
+            "type": "dart",
+            "args": [
+                "--dart-define=SERVER_HOST=192.168.1.74",
+                "--dart-define=ENV=development"
+            ]
+        },
+        {
+            "name": "Flutter (Production)",
+            "request": "launch",
+            "type": "dart",
+            "args": [
+                "--dart-define=SERVER_HOST=api.tudominio.com",
+                "--dart-define=ENV=production"
+            ]
+        }
+    ]
+}

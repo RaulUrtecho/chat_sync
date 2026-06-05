@@ -1,0 +1,5 @@
+Puntos clave de cada DAO:
+users_dao — searchUsers() usa LIKE '%query%' de SQL para búsqueda local instantánea. watchCurrentUser() emite un Stream que el UserBloc suscribe para reaccionar a cambios de sesión automáticamente.
+threads_dao — updateLastMessage() se llama dentro de la misma transacción que inserta el mensaje, garantizando que la thread card siempre muestre el texto correcto sin JOINs. watchAllThreads() ordena por lastMessageAt DESC con nulls: NullsOrder.last para que los threads sin mensajes vayan al fondo.
+messages_dao — getLastMessageTimestamp() es la pieza del delta sync: devuelve el timestamp del mensaje más reciente para armar la query ?since=. watchPendingCount() usa selectOnly con una expresión count() para conteo eficiente sin traer todos los registros.
+outbox_dao — insertOperation() tiene documentado explícitamente que siempre debe llamarse dentro de una transacción junto con la inserción del dato principal. watchPendingOperations() es el trigger reactivo del OutboxWorker — cada inserción en el outbox despierta al worker automáticamente.

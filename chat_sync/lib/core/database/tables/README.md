@@ -1,0 +1,5 @@
+Puntos clave de cada tabla:
+users_table.dart — tiene isCurrentUser como flag booleano. Evita consultar SharedPreferences en cada operación para saber quién es el usuario local.
+threads_table.dart — desnormaliza lastMessage y lastMessageAt directamente en el thread. Sin esto, cada render de la lista requeriría un JOIN costoso con messages.
+messages_table.dart — tiene dos campos de estado separados con propósito distinto: status es lo que ve el usuario (⏱ pending, ✓ sent, ✗ failed) y syncStatus es el estado técnico de la sincronización. Pueden diferir momentáneamente.
+outbox_table.dart — usa autoIncrement en el id (no UUID) para garantizar orden FIFO natural. El idempotencyKey es el mismo UUID del mensaje, resolviendo el problema de reintentos duplicados. El payload es JSON serializado para que el worker sepa exactamente qué enviar.

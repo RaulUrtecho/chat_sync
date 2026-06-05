@@ -1,0 +1,170 @@
+# =============================================================================
+# ChatSync — Offline-First Chat App
+# =============================================================================
+# pubspec.yaml
+#
+# Gestión de dependencias del proyecto. Las dependencias están agrupadas por
+# responsabilidad para facilitar la comprensión de qué resuelve cada una.
+#
+# GRUPOS:
+#   · Base de datos local   → Drift + SQLite (storage offline-first)
+#   · Red y HTTP            → Dio + interceptores (requests robustos)
+#   · Conectividad          → connectivity_plus (monitor de red)
+#   · Gestión de estado     → BLoC (eventos → estados)
+#   · Inyección deps        → get_it (service locator)
+#   · Utilidades            → uuid, shared_preferences
+#   · Generación de código  → build_runner, drift_dev (dev dependencies)
+# =============================================================================
+ 
+name: chat_sync
+description: >
+  Aplicación de mensajería offline-first construida para aprender y demostrar
+  estrategias de soporte offline en Flutter: Outbox Pattern, Delta Sync,
+  Connectivity Monitor, Retry con Backoff Exponencial y Optimistic UI.
+
+publish_to: "none" # No publicar en pub.dev
+ 
+# Versión semántica de la app: major.minor.patch+buildNumber
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.11.5
+
+# =============================================================================
+# DEPENDENCIAS DE PRODUCCIÓN
+# =============================================================================
+dependencies:
+  flutter:
+    sdk: flutter
+ 
+  # ---------------------------------------------------------------------------
+  # BASE DE DATOS LOCAL — Drift (SQLite ORM)
+  # ---------------------------------------------------------------------------
+  # drift: ORM tipado sobre SQLite. Genera código Dart para tablas, DAOs y
+  #   queries. Emite Streams reactivos que se suscriben directamente en BLoCs.
+  #   Es el corazón del almacenamiento offline-first.
+  #
+  # drift_flutter: Integración de Drift con Flutter. Provee la implementación
+  #   de la base de datos usando sqlite3 nativo en cada plataforma.
+  #
+  # sqlite3_flutter_libs: Binarios precompilados de SQLite para iOS y Android.
+  #   Sin este paquete, SQLite no estaría disponible en el dispositivo.
+  # ---------------------------------------------------------------------------
+  drift: ^2.18.0
+  drift_flutter: ^0.2.0
+  sqlite3_flutter_libs: ^0.5.0
+ 
+  # ---------------------------------------------------------------------------
+  # RED Y HTTP — Dio
+  # ---------------------------------------------------------------------------
+  # dio: HTTP client con soporte para interceptores, cancel tokens, timeouts
+  #   globales y manejo avanzado de errores. Es la base del retry y del
+  #   circuit breaker del proyecto.
+  #
+  # dio_smart_retry: Interceptor de Dio que implementa retry automático con
+  #   backoff exponencial configurable. Se activa en errores de red y 5xx.
+  #   Reemplaza escribir lógica de retry a mano en cada request.
+  # ---------------------------------------------------------------------------
+  dio: ^5.4.3
+  dio_smart_retry: ^6.0.0
+ 
+  # ---------------------------------------------------------------------------
+  # CONECTIVIDAD — Monitor de red
+  # ---------------------------------------------------------------------------
+  # connectivity_plus: Detecta cambios en el estado de la red (WiFi, cellular,
+  #   none) y emite un Stream. Se usa como trigger para el OutboxWorker.
+  #   IMPORTANTE: solo detecta si hay red, NO si el servidor propio responde.
+  #   Por eso lo combinamos con un ping real en ConnectivityMonitor.
+  # ---------------------------------------------------------------------------
+  connectivity_plus: ^6.0.3
+ 
+  # ---------------------------------------------------------------------------
+  # GESTIÓN DE ESTADO — BLoC
+  # ---------------------------------------------------------------------------
+  # flutter_bloc: Integración de BLoC con Flutter. Provee BlocProvider,
+  #   BlocBuilder, BlocListener y BlocConsumer para conectar BLoCs con widgets.
+  #
+  # bloc: Core del patrón BLoC. Define Bloc<Event, State> y Cubit<State>.
+  #   Los BLoCs del proyecto suscriben Streams de Drift y emiten estados
+  #   que reflejan el ciclo de vida offline de cada operación.
+  # ---------------------------------------------------------------------------
+  flutter_bloc: ^8.1.5
+  bloc: ^8.1.4
+ 
+  # ---------------------------------------------------------------------------
+  # INYECCIÓN DE DEPENDENCIAS — get_it
+  # ---------------------------------------------------------------------------
+  # get_it: Service locator. Registra y resuelve instancias singleton o factory
+  #   de: AppDatabase, DioClient, ConnectivityMonitor, OutboxWorker,
+  #   ChatRepository, etc. Permite desacoplar la creación de dependencias
+  #   de su uso en BLoCs y Repositories.
+  # ---------------------------------------------------------------------------
+  get_it: ^8.0.0
+ 
+  # ---------------------------------------------------------------------------
+  # UTILIDADES
+  # ---------------------------------------------------------------------------
+  # uuid: Genera UUIDs v4 en el cliente. FUNDAMENTAL para offline-first:
+  #   los registros se crean con su ID final sin esperar respuesta del server.
+  #   Elimina la necesidad de reasignar IDs tras sincronizar.
+  #
+  # shared_preferences: Almacenamiento key-value simple. Se usa únicamente
+  #   para persistir el userId y userName del usuario actual entre sesiones.
+  #   No se usa para datos de la app (eso va en SQLite).
+  #
+  # intl: Internacionalización y formateo de fechas. Se usa para mostrar
+  #   timestamps de mensajes en formato legible ("hoy 14:30", "ayer", etc.).
+  #
+  # equatable: Facilita la comparación por valor de entidades y estados BLoC.
+  #   Sin esto, dos instancias de MessageState con los mismos datos serían
+  #   distintas para Dart (comparación por referencia).
+  # ---------------------------------------------------------------------------
+  uuid: ^4.4.0
+  shared_preferences: ^2.2.3
+  intl: ^0.19.0
+  equatable: ^2.0.5
+  web_socket_channel: ^3.0.3
+  path: ^1.9.1
+ 
+# =============================================================================
+# DEPENDENCIAS DE DESARROLLO
+# =============================================================================
+# Solo se usan durante el desarrollo, no se incluyen en el build de producción.
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+ 
+  # ---------------------------------------------------------------------------
+  # GENERACIÓN DE CÓDIGO
+  # ---------------------------------------------------------------------------
+  # build_runner: Herramienta de generación de código de Dart. Se ejecuta con:
+  #   dart run build_runner build
+  #   dart run build_runner watch   (modo watch durante desarrollo)
+  #
+  # drift_dev: Plugin de build_runner específico de Drift. Genera:
+  #   · Las clases de datos (DataClass) para cada tabla
+  #   · Los métodos tipados de cada DAO
+  #   · El código de migraciones
+  #   Archivo generado: app_database.g.dart
+  # ---------------------------------------------------------------------------
+  build_runner: ^2.4.9
+  drift_dev: ^2.18.0
+ 
+  # ---------------------------------------------------------------------------
+  # ANÁLISIS ESTÁTICO
+  # ---------------------------------------------------------------------------
+  # flutter_lints: Reglas de lint recomendadas por el equipo de Flutter.
+  #   Configuradas en analysis_options.yaml.
+  # ---------------------------------------------------------------------------
+  flutter_lints: ^6.0.0
+ 
+# =============================================================================
+# CONFIGURACIÓN DE FLUTTER
+# =============================================================================
+flutter:
+  uses-material-design: true
+ 
+  # Assets del proyecto — se agregan conforme se necesiten
+  # assets:
+  #   - assets/images/
+ 
