@@ -1,7 +1,7 @@
 # CI/CD — Deploy automático del backend a Render
 #
 # Se activa SOLO cuando hay cambios en chat_sync_backend/
-# Si solo cambias Flutter no hace deploy innecesario.
+# Si solo cambia Flutter no hace deploy innecesario.
 
 name: Deploy Backend to Render
 

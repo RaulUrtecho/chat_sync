@@ -1,5 +1,3 @@
-// cmd/main.go
-//
 // Entry point del servidor ChatSync.
 //
 // SECUENCIA DE ARRANQUE:
