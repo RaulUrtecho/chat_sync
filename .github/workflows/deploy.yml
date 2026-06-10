@@ -1,0 +1,24 @@
+# CI/CD — Deploy automático del backend a Render
+#
+# Se activa SOLO cuando hay cambios en chat_sync_backend/
+# Si solo cambias Flutter no hace deploy innecesario.
+
+name: Deploy Backend to Render
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'chat_sync_backend/**'
+
+jobs:
+  deploy:
+    name: Trigger Render Deploy
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy to Render
+        run: |
+          curl -X POST "${{ secrets.RENDER_DEPLOY_HOOK }}"
+          echo "Deploy triggered successfully"
