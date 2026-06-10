@@ -17,6 +17,9 @@
 //      → Si hay usuario guardado → ThreadsScreen
 //      → Si no hay usuario      → CreateUserScreen
 
+import 'package:chat_sync/core/notifications/notification_service.dart';
+import 'package:chat_sync/firebase_options.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -34,10 +37,7 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // Fijar la orientación del dispositivo a vertical (portrait)
-  await SystemChrome.setPreferredOrientations([
-    DeviceOrientation.portraitUp,
-    DeviceOrientation.portraitDown,
-  ]);
+  await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp, DeviceOrientation.portraitDown]);
 
   // Este codigo es para borrar solo SQLITE para pruebas
   // final dbFile = await _getDbFile();
@@ -47,6 +47,10 @@ void main() async {
   // Este método es async porque SharedPreferences.getInstance() lo es.
   // Ver: lib/core/di/injector.dart para el detalle de cada paso.
   await initDependencies();
+  // Inicializar Firebase
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  // Inicializar notificaciones
+  await NotificationService.instance.initialize();
   await initializeDateFormatting('es', null);
 
   runApp(const ChatSyncApp());

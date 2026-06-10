@@ -1,6 +1,7 @@
 plugins {
     id("com.android.application")
-    id("kotlin-android")
+    // START: FlutterFire Configuration
+    id("com.google.gms.google-services")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
 }
@@ -10,13 +11,15 @@ android {
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
+    defaultConfig {
+        // multiDex is required for flutter_local_notifications plugin
+        multiDexEnabled = true
     }
 
-    kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_17.toString()
+    compileOptions {
+        isCoreLibraryDesugaringEnabled = true // Required for flutter_local_notifications plugin
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
 
     defaultConfig {
@@ -39,6 +42,18 @@ android {
     }
 }
 
+kotlin {
+    compilerOptions {
+        jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17
+    }
+}
+
+
 flutter {
     source = "../.."
+}
+
+dependencies {
+    // Required for flutter_local_notifications plugin
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
 }

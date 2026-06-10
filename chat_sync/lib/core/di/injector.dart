@@ -82,8 +82,13 @@ class AppConfig {
 
   static const String _env = String.fromEnvironment('ENV', defaultValue: 'development');
 
-  static const String serverBaseUrl = 'http://$_serverHost:8080';
-  static const String wsBaseUrl = 'ws://$_serverHost:8080';
+  static String get serverBaseUrl => isProduction
+      ? 'https://$_serverHost' // ← sin :8080
+      : 'http://$_serverHost:8080'; // ← local sí necesita el puerto
+
+  static String get wsBaseUrl => isProduction
+      ? 'wss://$_serverHost' // ← sin :8080
+      : 'ws://$_serverHost:8080';
 
   static const bool isProduction = _env == 'production';
   static const bool isDevelopment = _env == 'development';
@@ -125,7 +130,9 @@ Future<void> initDependencies() async {
   // disponible antes de que el OutboxWorker y SyncEngine arranquen.
   final connectivityMonitor = ConnectivityMonitor(
     serverBaseUrl: AppConfig.serverBaseUrl,
-    pingTimeout: const Duration(seconds: 5),
+    pingTimeout: AppConfig.isProduction
+        ? const Duration(seconds: 30) // Render puede tardar hasta 30s en despertar
+        : const Duration(seconds: 5), // local es rápido
     degradedRetryInterval: const Duration(seconds: 5),
   );
   await connectivityMonitor.initialize();

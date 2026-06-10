@@ -24,7 +24,7 @@
             "request": "launch",
             "type": "dart",
             "args": [
-                "--dart-define=SERVER_HOST=api.tudominio.com",
+                "--dart-define=SERVER_HOST=chat-sync-127a.onrender.com",
                 "--dart-define=ENV=production"
             ]
         }

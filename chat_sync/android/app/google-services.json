@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "712680298928",
+    "project_id": "chatsync-2278e",
+    "storage_bucket": "chatsync-2278e.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:712680298928:android:0a25f4bacc94a8d9e89e75",
+        "android_client_info": {
+          "package_name": "com.example.chat_sync"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCd_2x6o9XMp0fgmZIcOB19z8bAEqNJ5fg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

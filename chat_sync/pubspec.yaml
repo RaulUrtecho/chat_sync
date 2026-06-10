@@ -120,11 +120,15 @@ dependencies:
   #   distintas para Dart (comparación por referencia).
   # ---------------------------------------------------------------------------
   uuid: ^4.4.0
-  shared_preferences: ^2.2.3
+  shared_preferences: ^2.5.5
   intl: ^0.19.0
-  equatable: ^2.0.5
+  equatable: ^2.0.8
   web_socket_channel: ^3.0.3
   path: ^1.9.1
+  # Firebase
+  firebase_core: ^4.10.0
+  firebase_messaging: ^16.3.0
+  flutter_local_notifications: ^22.0.0
  
 # =============================================================================
 # DEPENDENCIAS DE DESARROLLO
