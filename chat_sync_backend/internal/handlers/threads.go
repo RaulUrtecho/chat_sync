@@ -109,11 +109,13 @@ func (h *ThreadsHandler) CreateThread(c *gin.Context) {
 //	400 Bad Request → userId faltante o inválido
 //	500 Internal    → error de base de datos
 func (h *ThreadsHandler) GetThreads(c *gin.Context) {
-	// Obtener y validar el userId del query param
-	userIDStr := c.Query("userId")
+	// Obtener userId del header X-User-Id — no del query param.
+	// Usar el query param permitiría que cualquier usuario vea
+	// los threads de otro pasando un userId arbitrario.
+	userIDStr := c.GetHeader("X-User-Id")
 	if userIDStr == "" {
 		c.JSON(http.StatusBadRequest, models.ErrorResponse{
-			Error: "el parámetro 'userId' es requerido",
+			Error: "X-User-Id header requerido",
 		})
 		return
 	}
@@ -121,7 +123,7 @@ func (h *ThreadsHandler) GetThreads(c *gin.Context) {
 	userID, err := uuid.Parse(userIDStr)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, models.ErrorResponse{
-			Error: "userId inválido",
+			Error: "X-User-Id inválido",
 		})
 		return
 	}
