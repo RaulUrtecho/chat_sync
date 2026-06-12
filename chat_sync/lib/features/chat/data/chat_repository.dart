@@ -102,6 +102,21 @@ class ChatRepository {
     return user;
   }
 
+  /// Envía el FCM token actual al servidor.
+  ///
+  /// Se llama en cada arranque de la app y cuando FCM rota el token.
+  Future<void> updateFCMToken(String fcmToken) async {
+    final userId = _currentUserId;
+    if (userId == null) return;
+    if (!_connectivity.isOnline) return;
+
+    try {
+      await _remote.updateFCMToken(userId: userId, fcmToken: fcmToken);
+    } on DioException {
+      // No crítico — se reintentará en el próximo arranque
+    }
+  }
+
   /// Obtiene el usuario actual desde la DB local.
   Future<UserEntity?> getCurrentUser() => _local.getCurrentUser();
 
@@ -166,7 +181,7 @@ class ChatRepository {
     try {
       // Pedir threads al servidor
       // Sin cursor 'since' — queremos todos los threads del usuario
-      final remoteThreads = await _remote.getThreads(userId: userId);
+      final remoteThreads = await _remote.getThreads();
 
       for (final threadJson in remoteThreads) {
         final threadId = threadJson['id'] as String;

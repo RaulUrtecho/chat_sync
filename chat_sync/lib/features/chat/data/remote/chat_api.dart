@@ -57,6 +57,13 @@ class ChatApi {
     return (response.data as List).cast<Map<String, dynamic>>();
   }
 
+  /// Registra o actualiza el FCM token del dispositivo en el servidor.
+  ///
+  /// Se llama en cada arranque de la app para mantener el token vigente.
+  Future<void> updateFCMToken({required String userId, required String fcmToken}) async {
+    await _dio.put('/users/$userId/fcm-token', data: {'fcm_token': fcmToken});
+  }
+
   // ---------------------------------------------------------------------------
   // THREADS
   // ---------------------------------------------------------------------------
@@ -85,8 +92,8 @@ class ChatApi {
   ///
   /// [since] si se proporciona, solo retorna threads creados o
   /// actualizados después de este timestamp (delta sync).
-  Future<List<Map<String, dynamic>>> getThreads({required String userId, DateTime? since}) async {
-    final queryParams = <String, dynamic>{'userId': userId};
+  Future<List<Map<String, dynamic>>> getThreads({DateTime? since}) async {
+    final queryParams = <String, dynamic>{};
     if (since != null) {
       queryParams['since'] = since.toUtc().toIso8601String();
     }

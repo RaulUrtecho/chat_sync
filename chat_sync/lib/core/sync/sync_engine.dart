@@ -177,7 +177,7 @@ class SyncEngine {
   /// Sincroniza threads del servidor que el usuario no tiene localmente
   /// o que han sido actualizados desde la última sincronización.
   Future<void> _syncThreads(String? sinceParam) async {
-    final queryParams = <String, dynamic>{'userId': _currentUserId};
+    final queryParams = <String, dynamic>{};
     if (sinceParam != null) queryParams['since'] = sinceParam;
 
     final response = await _dioClient.dio.get('/threads', queryParameters: queryParams);

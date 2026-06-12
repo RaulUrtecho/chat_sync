@@ -15,6 +15,7 @@
 //   Cada cambio en la DB (nuevo mensaje, sync completado) actualiza
 //   la lista automáticamente sin ningún pull-to-refresh.
 
+import 'package:chat_sync/core/notifications/notification_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -35,6 +36,28 @@ class ThreadsScreen extends StatefulWidget {
 class _ThreadsScreenState extends State<ThreadsScreen> {
   final _searchController = TextEditingController();
   final _searchFocusNode = FocusNode();
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Verificar si hay navegación pendiente desde una notificación
+    // cuando la app estaba cerrada
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final pending = NotificationService.instance.pendingThreadId;
+      if (pending != null) {
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => ChatScreen(
+              threadId: pending,
+              participantName: NotificationService.instance.pendingSenderName ?? 'Chat',
+            ),
+          ),
+        );
+        NotificationService.instance.clearPending();
+      }
+    });
+  }
 
   @override
   void dispose() {

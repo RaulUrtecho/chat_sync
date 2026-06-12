@@ -31,6 +31,8 @@ import 'features/chat/presentation/screens/create_user_screen.dart';
 import 'features/chat/presentation/screens/threads_screen.dart';
 // import 'package:path_provider/path_provider.dart';
 
+final navigatorKey = GlobalKey<NavigatorState>();
+
 void main() async {
   // Requerido antes de cualquier llamada async en main()
   // Inicializa el binding entre Flutter y el engine nativo.
@@ -72,6 +74,7 @@ class ChatSyncApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue, brightness: Brightness.light),
         useMaterial3: true,
       ),
+      navigatorKey: navigatorKey,
       // BlocProvider en el nivel raíz para que UserBloc
       // esté disponible en toda la árbol de widgets durante
       // la verificación inicial de sesión.

@@ -1,4 +1,5 @@
 import 'package:bloc/bloc.dart';
+import 'package:chat_sync/core/notifications/notification_service.dart';
 import 'package:equatable/equatable.dart';
 import '../../../../../core/di/injector.dart';
 import '../../../data/chat_repository.dart';
@@ -29,8 +30,20 @@ class UserBloc extends Bloc<UserEvent, UserState> {
     try {
       final user = await _repository.getCurrentUser();
       if (user != null) {
-        // Iniciar OutboxWorker y SyncEngine con el userId real
         startWorkersAfterLogin(user.id);
+
+        // Registrar FCM token en el servidor
+        final fcmToken = await NotificationService.instance.getToken();
+        if (fcmToken != null) {
+          await _repository.updateFCMToken(fcmToken);
+        }
+
+        // Suscribirse al refresh automático del token
+        // FCM puede rotar el token en cualquier momento sin aviso
+        NotificationService.instance.onTokenRefresh.listen((newToken) {
+          _repository.updateFCMToken(newToken);
+        });
+
         emit(UserLoaded(user: user));
       } else {
         emit(const UserNotFound());
@@ -62,8 +75,19 @@ class UserBloc extends Bloc<UserEvent, UserState> {
     emit(const UserLoading());
     try {
       final user = await _repository.createUser(trimmedName);
-      // Iniciar workers ahora que hay un userId válido
       startWorkersAfterLogin(user.id);
+
+      // Registrar FCM token en el servidor
+      final fcmToken = await NotificationService.instance.getToken();
+      if (fcmToken != null) {
+        await _repository.updateFCMToken(fcmToken);
+      }
+
+      // Suscribirse al refresh automático del token
+      NotificationService.instance.onTokenRefresh.listen((newToken) {
+        _repository.updateFCMToken(newToken);
+      });
+
       emit(UserLoaded(user: user));
     } catch (e) {
       emit(UserError(message: 'Error al crear usuario: $e'));
