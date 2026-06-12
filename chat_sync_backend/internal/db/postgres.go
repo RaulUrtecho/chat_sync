@@ -145,6 +145,56 @@ func (db *DB) CreateUser(ctx context.Context, req models.CreateUserRequest) (mod
 	return user, nil
 }
 
+// UpdateFCMToken guarda o actualiza el FCM token de un usuario.
+//
+// Se llama en cada arranque de la app Flutter para mantener el token
+// vigente. FCM puede rotar el token sin aviso, por lo que enviarlo
+// en cada arranque garantiza que siempre tengamos el token correcto.
+//
+// Si token es "" significa que el token anterior era inválido
+// (FCM retornó "registration-token-not-registered") y se está limpiando.
+func (db *DB) UpdateFCMToken(ctx context.Context, userID uuid.UUID, token string) error {
+	var tokenValue interface{}
+	if token == "" {
+		tokenValue = nil // guardar NULL en lugar de string vacío
+	} else {
+		tokenValue = token
+	}
+
+	_, err := db.conn.ExecContext(ctx,
+		`UPDATE users SET fcm_token = $1 WHERE id = $2`,
+		tokenValue, userID,
+	)
+	if err != nil {
+		return fmt.Errorf("error actualizando FCM token: %w", err)
+	}
+	return nil
+}
+
+// GetFCMToken obtiene el FCM token de un usuario.
+//
+// Retorna nil si:
+//   - El usuario no existe
+//   - El usuario nunca registró un token (primera instalación)
+//   - El token fue limpiado porque era inválido (desinstalación)
+//
+// El caller debe verificar nil antes de intentar enviar una notificación.
+func (db *DB) GetFCMToken(ctx context.Context, userID uuid.UUID) (*string, error) {
+	var token *string
+	err := db.conn.QueryRowContext(ctx,
+		`SELECT fcm_token FROM users WHERE id = $1`,
+		userID,
+	).Scan(&token)
+
+	if err == sql.ErrNoRows {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, fmt.Errorf("error obteniendo FCM token: %w", err)
+	}
+	return token, nil
+}
+
 // SearchUsers busca usuarios cuyo nombre contenga [query].
 //
 // Usa ILIKE para búsqueda case-insensitive con el índice trigram

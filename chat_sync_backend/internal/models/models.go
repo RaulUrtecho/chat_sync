@@ -29,8 +29,29 @@ import (
 
 // User representa un usuario del sistema.
 type User struct {
-	ID        uuid.UUID `json:"id"         db:"id"`
-	Name      string    `json:"name"       db:"name"`
+	ID   uuid.UUID `json:"id"         db:"id"`
+	Name string    `json:"name"       db:"name"`
+	// FCMToken es el token de Firebase Cloud Messaging del dispositivo.
+	//
+	// CICLO DE VIDA DEL TOKEN:
+	//   · Se genera cuando la app arranca por primera vez con FCM
+	//   · Puede cambiar cuando: el usuario reinstala la app, FCM lo rota
+	//     automáticamente, el usuario borra datos de la app
+	//   · Flutter envía el token actualizado en CADA arranque de la app
+	//     via PUT /users/:id/fcm-token para garantizar que siempre
+	//     tengamos el token vigente
+	//
+	// TOKEN INVÁLIDO:
+	//   Si FCM retorna "registration-token-not-registered" al intentar
+	//   enviar una notificación, el backend limpia este campo (vacío).
+	//   Al próximo arranque de la app Flutter enviará el nuevo token.
+	//
+	// MÚLTIPLES DISPOSITIVOS (no implementado actualmente):
+	//   Este campo solo soporta UN dispositivo por usuario.
+	//   Para múltiples dispositivos se necesitaría una tabla separada
+	//   user_devices con un token por fila.
+	//   Ver: NotificationService en Flutter para más detalles.
+	FCMToken  *string   `json:"fcm_token,omitempty" db:"fcm_token"`
 	CreatedAt time.Time `json:"created_at" db:"created_at"`
 }
 
@@ -41,6 +62,20 @@ type User struct {
 type CreateUserRequest struct {
 	ID   uuid.UUID `json:"id"   binding:"required"`
 	Name string    `json:"name" binding:"required,min=2,max=50"`
+}
+
+// UpdateFCMTokenRequest es el body del PUT /users/:id/fcm-token.
+//
+// Flutter llama este endpoint en cada arranque de la app para
+// mantener el token actualizado en el servidor.
+//
+// ¿Por qué en cada arranque y no solo al registrarse?
+//
+//	FCM puede rotar el token en cualquier momento sin avisar.
+//	Si solo lo enviamos al registrarse, el token puede quedar
+//	desactualizado y las notificaciones dejarán de llegar.
+type UpdateFCMTokenRequest struct {
+	FCMToken string `json:"fcm_token" binding:"required"`
 }
 
 // =============================================================================

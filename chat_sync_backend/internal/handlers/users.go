@@ -89,6 +89,63 @@ func (h *UsersHandler) CreateUser(c *gin.Context) {
 	c.JSON(http.StatusCreated, user)
 }
 
+// UpdateFCMToken maneja PUT /users/:id/fcm-token
+//
+// Actualiza el FCM token del dispositivo del usuario.
+//
+// Flutter llama este endpoint en CADA arranque de la app — no solo
+// al registrarse. Esto es fundamental porque FCM puede rotar el token
+// en cualquier momento sin notificación previa.
+//
+// FLUJO COMPLETO DEL TOKEN:
+//
+//	App arranca → getToken() → PUT /users/:id/fcm-token
+//	     ↓
+//	Backend guarda token en users.fcm_token
+//	     ↓
+//	Mensaje nuevo llega → backend busca token → envía push
+//	     ↓
+//	FCM responde "registration-token-not-registered" (token inválido)
+//	     ↓
+//	Backend limpia el token → PUT con token vacío
+//	     ↓
+//	Próximo arranque de la app → nuevo token → se actualiza
+//
+// REQUEST:
+//
+//	PUT /users/:id/fcm-token
+//	X-User-Id: {uuid}
+//	{ "fcm_token": "el-token-de-firebase" }
+//
+// RESPONSES:
+//
+//	200 OK          → token actualizado
+//	400 Bad Request → id o body inválido
+//	500 Internal    → error de base de datos
+func (h *UsersHandler) UpdateFCMToken(c *gin.Context) {
+	userIDStr := c.Param("id")
+	userID, err := uuid.Parse(userIDStr)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, models.ErrorResponse{
+			Error: "userId inválido",
+		})
+		return
+	}
+
+	var req models.UpdateFCMTokenRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: err.Error()})
+		return
+	}
+
+	if err := h.db.UpdateFCMToken(c.Request.Context(), userID, req.FCMToken); err != nil {
+		c.JSON(http.StatusInternalServerError, models.ErrorResponse{Error: err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "token actualizado"})
+}
+
 // SearchUsers maneja GET /users/search?q={query}
 //
 // Busca usuarios por nombre. Se usa en el search bar de ThreadsScreen.

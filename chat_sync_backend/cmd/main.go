@@ -108,6 +108,7 @@ func main() {
 		// Usuarios
 		api.POST("/users", usersHandler.CreateUser)
 		api.GET("/users/search", usersHandler.SearchUsers)
+		api.PUT("/users/:id/fcm-token", usersHandler.UpdateFCMToken)
 
 		// Threads
 		api.POST("/threads", threadsHandler.CreateThread)
