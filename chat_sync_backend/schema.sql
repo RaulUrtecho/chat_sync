@@ -35,6 +35,7 @@ CREATE EXTENSION IF NOT EXISTS pg_trgm;
 CREATE TABLE IF NOT EXISTS users (
     id          UUID        PRIMARY KEY,
     name        VARCHAR(50) NOT NULL,
+    fcm_token   TEXT,                        -- Token FCM del dispositivo para push notifications
     created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
